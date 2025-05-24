@@ -3,8 +3,11 @@ import random
 from faker import Faker
 from datetime import datetime, timedelta
 import os 
+from dotenv import load_dotenv
 
-DB_NAME = 'user_transactions.db'
+load_dotenv()
+
+DB_NAME = os.environ["DB_URL"]
 NUM_PEOPLE = 12 
 MIN_TRANSACTIONS_PER_PERSON = 5
 MAX_TRANSACTIONS_PER_PERSON = 25

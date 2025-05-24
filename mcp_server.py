@@ -2,9 +2,13 @@ from mcp.server.fastmcp import FastMCP
 import sqlite3
 import random
 from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 mcp = FastMCP("Finance Management Data")
-DB_NAME = r'D:\learning\mcp-server\user_transactions.db'
+DB_NAME = os.environ["DB_URL"]
 
 @mcp.tool()
 def get_transactions_by_month_and_name(first_name, last_name, month):
@@ -19,7 +23,6 @@ def get_transactions_by_month_and_name(first_name, last_name, month):
               Each tuple contains (transaction_id, transaction_date, amount, location, description).
     """
     conn = sqlite3.connect(DB_NAME)
-    # Return rows as dictionary-like objects
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
