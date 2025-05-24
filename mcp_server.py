@@ -25,8 +25,6 @@ def get_transactions_by_month_and_name(first_name, last_name, month):
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-
-    # Format month with leading zero if needed (e.g., 1 -> '01')
     month_str = f"{month:02d}"
 
     cursor.execute('''
@@ -40,7 +38,6 @@ def get_transactions_by_month_and_name(first_name, last_name, month):
 
     transactions = cursor.fetchall()
     conn.close()
-    # Convert Row objects to standard dictionaries for easier use
     return [dict(row) for row in transactions]
 
 @mcp.tool()
@@ -59,7 +56,6 @@ def get_transactions_by_day_and_name(first_name, last_name, date_str):
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    # Validate date format (basic check)
     try:
         datetime.strptime(date_str, '%Y-%m-%d')
     except ValueError:
@@ -103,7 +99,6 @@ def get_total_transaction_amount_by_name(first_name, last_name):
     result = cursor.fetchone()
     conn.close()
 
-    # fetchone() returns a tuple (total,) or (None,) if no matching rows
     if result and result[0] is not None:
         return round(result[0], 2)
     else:
@@ -120,11 +115,8 @@ def list_all_people():
                     'phone_number', 'most_frequent_location' (can be None).
     """
     conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row # Return rows as dictionary-like objects
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-
-    # Use a CTE to rank locations by frequency for each person
-    # Tie-breaking: If counts are equal, pick the one with the most recent transaction
     sql_query = """
     WITH RankedLocations AS (
         SELECT
@@ -151,7 +143,6 @@ def list_all_people():
     people = cursor.fetchall()
     conn.close()
 
-    # Convert Row objects to standard dictionaries
     return [dict(row) for row in people]
 
 
@@ -190,36 +181,28 @@ def get_transactions_by_location(location):
     return [dict(row) for row in transactions]
 
 if __name__ == "__main__":
+    
+    # Test Code to verify whether dummy population works or not.
+
     POSSIBLE_LOCATIONS = ["New York", "London", "Tokyo", "Paris", "Berlin", "Sydney", "Mumbai", "Online", "Arcot", "Chennai"]
-    # # 1. Setup the database and tables
-    # setup_database()
-
-    # # 2. Populate with dummy data (only if empty)
-    # populate_dummy_data()
-
     print("\n--- Database Operations Demo ---")
 
-    # 3. List all people (NOW INCLUDES LOCATION)
+    # 1. List all people
     print("\nListing all people in the system (with most frequent location):")
     all_people = list_all_people()
     if all_people:
-        for person in all_people[:15]: # Print more people to see variety
+        for person in all_people[:15]:
             location_str = person['most_frequent_location'] if person['most_frequent_location'] else "N/A"
             print(f"  ID: {person['person_id']}, Name: {person['first_name']} {person['last_name']}, "
                   f"Email: {person['email']}, Location: {location_str}")
-        # if len(all_people) > 15: # Adjust if needed
-        #     print(f"  ... and {len(all_people) - 15} more.")
 
-        # Select a random person for further demos (if people exist)
         if all_people:
              demo_person = random.choice(all_people)
              demo_first_name = demo_person['first_name']
              demo_last_name = demo_person['last_name']
              print(f"\n--- Using '{demo_first_name} {demo_last_name}' for specific demos ---")
 
-             # ... (rest of the demo remains the same) ...
-
-             # 4. Get transactions by month and name
+             # 2. Get transactions by month and name
              demo_month = random.randint(1, 12)
              print(f"\nTransactions for {demo_first_name} {demo_last_name} in Month {demo_month}:")
              month_transactions = get_transactions_by_month_and_name(demo_first_name, demo_last_name, demo_month)
@@ -229,7 +212,7 @@ if __name__ == "__main__":
              else:
                  print("  No transactions found for this month.")
 
-             # 5. Get transactions by day and name
+             # 3. Get transactions by day and name
              demo_date = ""
              if month_transactions:
                  try:
@@ -249,14 +232,14 @@ if __name__ == "__main__":
              else:
                  print("  No transactions found for this specific day.")
 
-             # 6. Get total transaction amount by name
+             # 4. Get total transaction amount by name
              total_amount = get_total_transaction_amount_by_name(demo_first_name, demo_last_name)
              print(f"\nTotal transaction amount for {demo_first_name} {demo_last_name}: ${total_amount:.2f}")
 
     else:
         print("No people found in the database. Cannot run demos.")
 
-    # 7. Get transactions by location
+    # 5. Get transactions by location
     demo_location = random.choice(POSSIBLE_LOCATIONS)
     print(f"\nTransactions at location '{demo_location}':")
     location_transactions = get_transactions_by_location(demo_location)
